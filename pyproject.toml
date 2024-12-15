@@ -1,0 +1,31 @@
+[project]
+name = "mailerlite-sync"
+version = "0.1"
+description = "Sync CCL Roster to Mailerlite"
+readme = "README.md"
+authors = [{name = "Sean Dague"}]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "click",
+    "mailerlite"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/sdague/mailerlite-sync"
+Changelog = "https://github.com/sdague/mailerlite-sync/releases"
+Issues = "https://github.com/sdague/mailerlite-sync/issues"
+CI = "https://github.com/sdague/mailerlite-sync/actions"
+
+[project.scripts]
+mailerlite-sync = "mailerlite_sync.cli:cli"
+
+[project.optional-dependencies]
+test = ["pytest"]
