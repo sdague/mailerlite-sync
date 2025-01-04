@@ -24,6 +24,16 @@ def find_record(records, email):
         if rec['email'] == email:
             return rec
 
+def extra_emails(records, roster):
+    extras = []
+    for rec in records:
+        for email in roster:
+            if rec['email'] == email:
+                break
+        else:
+            extras.append(rec['email'])
+    return extras
+        
 def needs_update(ml_rec, row):
     # If the user unsubscribed, we can't update them
     if ml_rec['status'] in ('unsubscribed', 'bounced'):
@@ -67,14 +77,15 @@ def first_command(roster, token):
     })
 
     records = collect_ml(client)
-
+    roster_emails = []
     with open(roster) as f:
-        roster = csv.DictReader(f)
-        for row in roster:
+        ros = csv.DictReader(f)
+        for row in ros:
             email = row['Email']
             if email:
                 # click.echo(row)
                 # click.echo(email)
+                roster_emails.append(email)
                 response = find_record(records, email)
 
                 if not response or not response.get('fields'):
@@ -88,5 +99,8 @@ def first_command(roster, token):
                     click.echo(response)
                 else:
                     click.echo(f"{email} unchanged")
+    extras = extra_emails(records, roster_emails)
+    click.echo("Extra emails")
+    click.echo(extras)
     click.echo('Missing emails')
     click.echo(missing_emails)
