@@ -7,6 +7,8 @@ import mailerlite as MailerLite
 
 
 FIELD_MAP = {
+    "name": "First Name",
+    "last_name": "Last Name",
     "engagement_segment": "Engagement Segment",
     "congressional_district": "Congressional District",
     "intro_call_date": "Date Of Intro Call",
@@ -24,6 +26,7 @@ def find_record(records, email):
         if rec['email'] == email:
             return rec
 
+        
 def extra_emails(records, roster):
     extras = []
     for rec in records:
@@ -33,7 +36,16 @@ def extra_emails(records, roster):
         else:
             extras.append(rec['email'])
     return extras
-        
+
+
+def collect_fields(row):
+    fields = {}
+    for k, v in FIELD_MAP.items():
+        roster_field = row[v]
+        fields[k] = roster_field
+    return fields
+
+
 def needs_update(ml_rec, row):
     # If the user unsubscribed, we can't update them
     if ml_rec['status'] in ('unsubscribed', 'bounced'):
@@ -104,3 +116,15 @@ def first_command(roster, token):
     click.echo(extras)
     click.echo('Missing emails')
     click.echo(missing_emails)
+    
+    with open(roster) as f:
+        ros = csv.DictReader(f)
+        for row in ros:
+            email = row['Email']
+            if email in missing_emails:
+                fields = collect_fields(row)
+                try:
+                    click.echo(f"Adding email {email}")
+                    response = client.subscribers.create(email, fields=fields)
+                except Exception as e:
+                    print(e)
