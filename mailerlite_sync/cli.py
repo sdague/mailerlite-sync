@@ -79,6 +79,11 @@ def needs_update(ml_rec, row):
             fields[k] = roster_field
     return fields
 
+def add_to_whole_roster(client, subid):
+    resp = client.groups.list(filter={'name': 'Whole Roster'})
+    data = resp['data'][0]
+    
+    client.subscribers.assign_subscriber_to_group(subid, int(data['id']))
 
 def collect_ml(client):
     resp = client.subscribers.list(limit=1000)
@@ -117,7 +122,6 @@ def first_command(roster, token):
                 # click.echo(email)
                 roster_emails.append(email)
                 response = find_record(records, email)
-
                 if not response or not response.get('fields'):
                     click.echo(f"Missing record for {email}")
                     missing_emails.append(email)
@@ -126,6 +130,7 @@ def first_command(roster, token):
                 fields = needs_update(response, row)
                 if fields:
                     response = client.subscribers.update(email, fields=fields)
+                    click.echo(response)
                 else:
                     click.echo(f"{email} unchanged")
     extras = extra_emails(records, roster_emails)
@@ -141,5 +146,9 @@ def first_command(roster, token):
                 try:
                     click.echo(f"Adding email {email}")
                     response = client.subscribers.create(email, fields=fields)
+                    click.echo(response)
+                    subid = response['data']['id']
+                    add_to_whole_roster(client, int(subid))
+                    click.echo(f"Added to roster subscription group")
                 except Exception as e:
                     print(e)
