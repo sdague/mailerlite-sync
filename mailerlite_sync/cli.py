@@ -23,6 +23,8 @@ FIELD_MAP = {
     "city": "Mailing City"
 }
 
+DROP = ["Long Term Unengaged"]
+
 DATES = [
     "Date Of Intro Call",
     "Date Added to Database",
@@ -48,6 +50,7 @@ def find_record(records, email):
 def extra_emails(records, roster):
     extras = []
     for rec in records:
+        print(rec)
         for email in roster:
             if rec['email'] == email:
                 break
@@ -67,7 +70,8 @@ def collect_fields(row):
 def needs_update(ml_rec, row):
     # If the user unsubscribed, we can't update them
     if ml_rec['status'] in ('unsubscribed', 'bounced'):
-        return
+        return        
+    
     email = ml_rec['email']
     fields = {}
     for k, v in FIELD_MAP.items():
@@ -120,11 +124,13 @@ def first_command(roster, token):
             if email:
                 # click.echo(row)
                 # click.echo(email)
+                # This ensures that we don't add in new long term unengaged
                 roster_emails.append(email)
                 response = find_record(records, email)
                 if not response or not response.get('fields'):
-                    click.echo(f"Missing record for {email}")
-                    missing_emails.append(email)
+                    if row['Engagement Segment'] not in DROP:
+                        click.echo(f"Missing record for {email}")
+                        missing_emails.append(email)
                     continue
 
                 fields = needs_update(response, row)
